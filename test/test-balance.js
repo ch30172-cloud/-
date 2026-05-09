@@ -1,104 +1,104 @@
-// Lightweight test for column-balancing math (no browser).
-// Run: node test/test-balance.js
-
-const Module = require('module');
+// Tests for the balanced-columns engine. Runs without browser by stubbing template.
+const fs = require('fs');
 const path = require('path');
 
-// Stub template so layout.js loads without pulling Puppeteer
-const stubPath = path.join(__dirname, '..', 'lib', 'template.js');
-const realRequire = Module.prototype.require;
-Module.prototype.require = function (id) {
-  if (id === './template' || id === path.join('.', 'template')) {
-    return {
-      buildMeasureDoc: () => '',
-      buildPagedDoc: () => '',
-      computeGeometry: () => ({}),
-    };
-  }
-  return realRequire.apply(this, arguments);
-};
+// Extract the standalone helper functions from layout.js source.
+const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'layout.js'), 'utf8');
+const fns = ['countGaps', 'sumHeights', 'isFeasibleEqual', 'findBalancedSplit', 'computeEqualization', 'extractSpanTop', 'splitPages']
+  .map(name => {
+    const m = src.match(new RegExp(`function ${name}\\([\\s\\S]*?\\n\\}`));
+    if (!m) throw new Error('missing ' + name);
+    return m[0];
+  }).join('\n\n');
+const constMatch = src.match(/const MAX_GAP_STRETCH_PX[^;]+;/);
+const code = `${constMatch[0]}\n${fns}\nmodule.exports = { findBalancedSplit, computeEqualization, splitPages, MAX_GAP_STRETCH_PX };`;
+const m = { exports: {} };
+new Function('module', 'exports', code)(m, m.exports);
+const { findBalancedSplit, computeEqualization, splitPages, MAX_GAP_STRETCH_PX } = m.exports;
 
-const layout = require('../lib/layout.js');
-Module.prototype.require = realRequire;
+let testNum = 0;
+function assert(cond, msg) {
+  testNum++;
+  if (!cond) { console.error(`FAIL [${testNum}]:`, msg); process.exit(1); }
+  console.log(`OK   [${testNum}]:`, msg);
+}
+function approxEqual(a, b, eps = 0.6) { return Math.abs(a - b) <= eps; }
 
-// Re-implement splitPages locally by exporting bits we need.
-// Instead, directly invoke via internal test surface:
-function makeLines(heights, opts = {}) {
-  return heights.map((h, i) => ({
-    itemIdx: opts.itemAt ? opts.itemAt(i) : i,
-    itemType: 'p',
-    breakBefore: opts.breakBeforeAt ? opts.breakBeforeAt(i) : false,
-    height: h,
-    chunkStart: 0, chunkEnd: 100,
-    isFirst: true, isLast: true,
+function makeLines(specs) {
+  // specs: array of [height, itemIdx, type, breakBefore?]
+  return specs.map(([h, idx, type = 'p', br = false]) => ({
+    itemIdx: idx, itemType: type, breakBefore: br,
+    height: h, chunkStart: 0, chunkEnd: 100, isFirst: true, isLast: true,
   }));
 }
+const sumH = (a) => a.reduce((s, l) => s + l.height, 0);
 
-// Re-export internal functions via eval of the source for testing
-const fs = require('fs');
-const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'layout.js'), 'utf8');
-const splitPagesMatch = src.match(/function splitPages[\s\S]*?\n\}/);
-const findBestMatch = src.match(/function findBestPageSplit[\s\S]*?\n\}/);
-const bestSplitMatch = src.match(/function bestSplitWithin[\s\S]*?\n\}/);
-const fnSrc = bestSplitMatch[0] + '\n' + findBestMatch[0] + '\n' + splitPagesMatch[0] + '\nmodule.exports = { splitPages };';
-const m = { exports: {} };
-new Function('module', 'exports', fnSrc)(m, m.exports);
-const { splitPages } = m.exports;
-
-function approxEqual(a, b, eps = 0.6) { return Math.abs(a - b) <= eps; }
-function sumH(arr) { return arr.reduce((s, l) => s + l.height, 0); }
-
-function assert(cond, msg) {
-  if (!cond) { console.error('FAIL:', msg); process.exit(1); }
-  console.log('OK:  ', msg);
-}
-
-// Test 1: 10 lines of 10px each, colHeight 30 → expect 2 pages of (cols 30+30=60), last page 10+10=20
+// --- Test 1: Equal columns within budget on a regular page ----------
 {
-  const lines = makeLines(Array(10).fill(10));
-  const cfg = { geometry: { columnHeightPx: 30 } };
-  const pages = splitPages(lines, cfg);
-  console.log('Test 1 pages:', pages.map(p => ({a: sumH(p.colA), b: sumH(p.colB)})));
-  assert(pages.length === 2, '2 pages for 10 lines @ colHeight 30');
-  assert(approxEqual(sumH(pages[0].colA), sumH(pages[0].colB)), 'page 1 cols balanced');
-}
-
-// Test 2: lines of mixed heights, balance check
-{
-  const heights = [20, 10, 5, 15, 25, 8, 12, 30, 5, 5];
-  const lines = makeLines(heights);
-  const cfg = { geometry: { columnHeightPx: 50 } };
-  const pages = splitPages(lines, cfg);
-  console.log('Test 2 pages:', pages.map(p => ({a: sumH(p.colA), b: sumH(p.colB)})));
+  // 8 paragraphs, 2 lines each (height 10 each), col height 40 → 2 pages of 4 paras each
+  const specs = [];
+  for (let p = 0; p < 8; p++) for (let l = 0; l < 2; l++) specs.push([10, p, 'p']);
+  const lines = makeLines(specs);
+  const pages = splitPages(lines, [], { geometry: { columnHeightPx: 40 } });
+  console.log('Test 1 pages:', pages.map(p => ({a: sumH(p.colA), b: sumH(p.colB), sa: round(p.slackPerGapA), sb: round(p.slackPerGapB)})));
   pages.forEach((p, i) => {
-    const a = sumH(p.colA), b = sumH(p.colB);
-    assert(a <= 50.6 && b <= 50.6, `page ${i+1} both columns within colHeight (a=${a}, b=${b})`);
+    const ha = sumH(p.colA) + p.slackPerGapA * Math.max(0, distinctItems(p.colA) - 1);
+    const hb = sumH(p.colB) + p.slackPerGapB * Math.max(0, distinctItems(p.colB) - 1);
+    assert(approxEqual(ha, hb, 0.6), `page ${i+1} cols equal after slack (a=${round(ha)}, b=${round(hb)})`);
   });
-  const total = pages.flatMap(p => [...p.colA, ...p.colB]).length;
-  assert(total === heights.length, 'no lines lost or duplicated');
 }
 
-// Test 3: break-before forces a new page
+// --- Test 2: H1 forces a span at top, prev page may end short ----------
 {
-  const heights = [10, 10, 10, 10, 10, 10];
-  const lines = makeLines(heights, { breakBeforeAt: i => i === 3 });
-  const cfg = { geometry: { columnHeightPx: 100 } };
-  const pages = splitPages(lines, cfg);
-  console.log('Test 3 pages:', pages.map(p => ({a: p.colA.length, b: p.colB.length})));
-  assert(pages.length >= 2, 'break-before creates a page boundary');
-  assert(pages[0].colA.length + pages[0].colB.length === 3, 'first page has 3 lines (before break)');
+  // 6 paras × 2 lines each = 120, col=60 → fits 1 page
+  // then h1 (14)
+  // then 4 paras × 2 lines = 80, fits next page below span
+  const specs = [];
+  for (let p = 0; p < 6; p++) for (let l = 0; l < 2; l++) specs.push([10, p, 'p']);
+  specs.push([14, 100, 'h1', true]);
+  for (let p = 101; p < 105; p++) for (let l = 0; l < 2; l++) specs.push([10, p, 'p']);
+  const lines = makeLines(specs);
+  const pages = splitPages(lines, [], { geometry: { columnHeightPx: 60 } });
+  console.log('Test 2 pages:');
+  pages.forEach((p, i) => console.log(`  page ${i+1}: span=${p.spanTop.length} a=${sumH(p.colA)} b=${sumH(p.colB)} sa=${round(p.slackPerGapA)} sb=${round(p.slackPerGapB)}`));
+
+  const h1Page = pages.find(p => p.spanTop.length > 0);
+  assert(h1Page, 'a page contains the h1 in spanTop');
+
+  pages.forEach((p, i) => {
+    const ha = sumH(p.colA) + p.slackPerGapA * Math.max(0, distinctItems(p.colA) - 1);
+    const hb = sumH(p.colB) + p.slackPerGapB * Math.max(0, distinctItems(p.colB) - 1);
+    assert(approxEqual(ha, hb, 0.6), `page ${i+1} cols equal after slack (a=${round(ha)}, b=${round(hb)})`);
+  });
 }
 
-// Test 4: best split picks balanced mid
+// --- Test 3: 2pt cap respected ----------
 {
-  const heights = [40, 10, 10, 40];
-  const lines = makeLines(heights);
-  const cfg = { geometry: { columnHeightPx: 50 } };
-  const pages = splitPages(lines, cfg);
-  console.log('Test 4 pages:', pages.map(p => ({a: sumH(p.colA), b: sumH(p.colB)})));
-  assert(pages.length === 1, 'fits in 1 page');
-  const a = sumH(pages[0].colA), b = sumH(pages[0].colB);
-  assert(approxEqual(a, b, 1), `cols balanced (a=${a}, b=${b})`);
+  const specs = [
+    [10, 0, 'p'], [10, 0, 'p'], [10, 0, 'p'], // para 0: 30
+    [10, 1, 'p'], [10, 1, 'p'], [10, 1, 'p'],
+    [10, 2, 'p'], [10, 2, 'p'], [10, 2, 'p'],
+    [10, 3, 'p'], [10, 3, 'p'], [10, 3, 'p'],
+  ];
+  const lines = makeLines(specs);
+  const pages = splitPages(lines, [], { geometry: { columnHeightPx: 60 } });
+  pages.forEach((p, i) => {
+    assert(p.slackPerGapA <= MAX_GAP_STRETCH_PX + 0.01, `page ${i+1} slackA ≤ 2pt`);
+    assert(p.slackPerGapB <= MAX_GAP_STRETCH_PX + 0.01, `page ${i+1} slackB ≤ 2pt`);
+  });
 }
 
-console.log('\nAll balance tests passed.');
+// --- Test 4: No content lost ----------
+{
+  const heights = [12, 8, 5, 18, 22, 6, 14, 9, 11, 7, 13, 16, 4, 8, 10];
+  const specs = heights.map((h, i) => [h, Math.floor(i / 3), 'p']);
+  const lines = makeLines(specs);
+  const pages = splitPages(lines, [], { geometry: { columnHeightPx: 50 } });
+  const totalLines = pages.reduce((n, p) => n + p.spanTop.length + p.colA.length + p.colB.length, 0);
+  assert(totalLines === lines.length, `no lines lost (got ${totalLines}, expected ${lines.length})`);
+}
+
+function distinctItems(arr) { const s = new Set(); arr.forEach(l => s.add(l.itemIdx)); return s.size; }
+function round(n) { return Math.round(n * 100) / 100; }
+
+console.log('\nAll tests passed.');

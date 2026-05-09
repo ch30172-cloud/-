@@ -184,17 +184,69 @@
     </div>
 
     <div class="block">
-      <div class="block-title">🔤 פונט גוף הטקסט</div>
-      <div class="row">
-        <div><label>גודל (pt)</label><input type="number" id="bodySize" value="11" step="0.5"></div>
-        <div><label>ליד (pt)</label><input type="number" id="bodyLh" value="14" step="0.5"></div>
+      <div class="block-title">🔤 גוף הטקסט</div>
+      <div><label>פונט</label><select id="body_font" data-font></select></div>
+      <div class="row3" style="margin-top:6px">
+        <div><label>גודל</label><input type="number" id="body_size" value="11" step="0.5"></div>
+        <div><label>ליד</label><input type="number" id="body_lh" value="14" step="0.5"></div>
+        <div><label>משקל</label><select id="body_weight"><option value="400" selected>רגיל</option><option value="700">מודגש</option></select></div>
       </div>
-      <div><label>פונט</label>
-        <select id="bodyFont">
-          <option>Frank Ruhl Libre</option>
-          <option>Noto Serif Hebrew</option>
-          <option>Heebo</option>
+      <div><label>יישור</label>
+        <select id="body_align">
+          <option value="justify" selected>מלא (Justify)</option>
+          <option value="right">ימין</option>
+          <option value="center">אמצע</option>
+          <option value="left">שמאל</option>
         </select>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">⬢ כותרת ראשית (h1) — פרושה מעל הטורים</div>
+      <div><label>פונט</label><select id="h1_font" data-font></select></div>
+      <div class="row3" style="margin-top:6px">
+        <div><label>גודל</label><input type="number" id="h1_size" value="22" step="0.5"></div>
+        <div><label>ליד</label><input type="number" id="h1_lh" value="28" step="0.5"></div>
+        <div><label>משקל</label><select id="h1_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>צבע</label><input type="color" id="h1_color" value="#1a1a1a"></div>
+        <div><label>רווח אחרי (מ"מ)</label><input type="number" id="h1_after" value="4" step="0.5"></div>
+      </div>
+      <div class="hint">תופיע ממורכזת באמצע מעל שני הטורים</div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">⬢ כותרת משנה (h2)</div>
+      <div><label>פונט</label><select id="h2_font" data-font></select></div>
+      <div class="row3" style="margin-top:6px">
+        <div><label>גודל</label><input type="number" id="h2_size" value="14" step="0.5"></div>
+        <div><label>ליד</label><input type="number" id="h2_lh" value="18" step="0.5"></div>
+        <div><label>משקל</label><select id="h2_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
+      </div>
+      <div class="row3">
+        <div><label>יישור</label>
+          <select id="h2_align"><option value="right">ימין</option><option value="center" selected>אמצע</option><option value="left">שמאל</option></select>
+        </div>
+        <div><label>צבע</label><input type="color" id="h2_color" value="#1a1a1a"></div>
+        <div><label>אחרי (מ"מ)</label><input type="number" id="h2_after" value="1" step="0.5"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">⬢ כותרת רמה 3 (h3)</div>
+      <div><label>פונט</label><select id="h3_font" data-font></select></div>
+      <div class="row3" style="margin-top:6px">
+        <div><label>גודל</label><input type="number" id="h3_size" value="12" step="0.5"></div>
+        <div><label>ליד</label><input type="number" id="h3_lh" value="16" step="0.5"></div>
+        <div><label>משקל</label><select id="h3_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
+      </div>
+      <div class="row3">
+        <div><label>יישור</label>
+          <select id="h3_align"><option value="right" selected>ימין</option><option value="center">אמצע</option><option value="left">שמאל</option></select>
+        </div>
+        <div><label>צבע</label><input type="color" id="h3_color" value="#1a1a1a"></div>
+        <div><label>אחרי (מ"מ)</label><input type="number" id="h3_after" value="0.5" step="0.5"></div>
       </div>
     </div>
 

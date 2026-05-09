@@ -63,20 +63,47 @@ async function handleFile(file) {
   }
 }
 
+const FONTS = ['Frank Ruhl Libre', 'Noto Serif Hebrew', 'Heebo', 'Assistant'];
+
+function fillFontPickers() {
+  document.querySelectorAll('select[data-font]').forEach(sel => {
+    sel.innerHTML = '';
+    FONTS.forEach(f => {
+      const o = document.createElement('option');
+      o.value = f; o.textContent = f;
+      sel.appendChild(o);
+    });
+    sel.value = sel.id.startsWith('body') ? 'Frank Ruhl Libre' : 'Frank Ruhl Libre';
+  });
+}
+
+function fontSpec(prefix, defaults) {
+  return {
+    family: $(`${prefix}_font`).value,
+    sizePt: +$(`${prefix}_size`).value,
+    lineHeightPt: $(`${prefix}_lh`) ? +$(`${prefix}_lh`).value : defaults.lineHeightPt,
+    weight: +$(`${prefix}_weight`).value,
+    align: $(`${prefix}_align`) ? $(`${prefix}_align`).value : defaults.align,
+    color: $(`${prefix}_color`) ? $(`${prefix}_color`).value : (defaults.color || '#1a1a1a'),
+    spaceAfterMm: $(`${prefix}_after`) ? +$(`${prefix}_after`).value : (defaults.spaceAfterMm || 0),
+  };
+}
+
 function gatherConfig() {
-  const c = {
+  const body = fontSpec('body', { lineHeightPt: 14, align: 'justify' });
+  const h1 = fontSpec('h1', { lineHeightPt: 28, align: 'center', spaceAfterMm: 4 });
+  const h2 = fontSpec('h2', { lineHeightPt: 18, align: 'center', spaceAfterMm: 1 });
+  const h3 = fontSpec('h3', { lineHeightPt: 16, align: 'right', spaceAfterMm: 0.5 });
+  return {
     title: state.title,
     bookName: $('bookName').value,
     pageSize: { widthMm: +$('pageW').value, heightMm: +$('pageH').value },
     margins: { topMm: +$('mTop').value, bottomMm: +$('mBot').value, insideMm: +$('mIn').value, outsideMm: +$('mOut').value },
     columns: { count: +$('colCount').value, gutterMm: +$('gutter').value },
-    fonts: {
-      body: { family: $('bodyFont').value, sizePt: +$('bodySize').value, lineHeightPt: +$('bodyLh').value, weight: 400, align: 'justify' },
-    },
-    pageNumber: { mode: $('pnMode').value, startAt: +$('pnStart').value, enabled: true, fontFamily: $('bodyFont').value, fontSizePt: +$('bodySize').value },
-    runningHeader: { enabled: true, style: 1, fontFamily: $('bodyFont').value, fontSizePt: +$('bodySize').value, showRule: true },
+    fonts: { body, h1, h2, h3 },
+    pageNumber: { mode: $('pnMode').value, startAt: +$('pnStart').value, enabled: true, fontFamily: body.family, fontSizePt: body.sizePt },
+    runningHeader: { enabled: true, style: 1, fontFamily: body.family, fontSizePt: body.sizePt, showRule: true },
   };
-  return c;
 }
 
 async function renderPreview() {
@@ -134,9 +161,19 @@ async function downloadPDF() {
 
 let debounceTimer;
 function bindLiveControls() {
-  const ids = ['pageW','pageH','mTop','mBot','mIn','mOut','colCount','gutter','bodySize','bodyLh','bodyFont','bookName','pnMode','pnStart'];
+  const ids = [
+    'pageW','pageH','mTop','mBot','mIn','mOut','colCount','gutter',
+    'bookName','pnMode','pnStart',
+    'body_font','body_size','body_lh','body_weight','body_align',
+    'h1_font','h1_size','h1_lh','h1_weight','h1_color','h1_after',
+    'h2_font','h2_size','h2_lh','h2_weight','h2_align','h2_color','h2_after',
+    'h3_font','h3_size','h3_lh','h3_weight','h3_align','h3_color','h3_after',
+  ];
   ids.forEach(id => {
-    $(id).addEventListener('change', () => {
+    const el = $(id);
+    if (!el) return;
+    const ev = (el.type === 'color' || el.type === 'number' || el.tagName === 'SELECT') ? 'change' : 'input';
+    el.addEventListener(ev, () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => { if (state.items.length) renderPreview(); }, 200);
     });
@@ -147,6 +184,7 @@ function bindLiveControls() {
 }
 
 (async function init() {
+  fillFontPickers();
   await loadPresets();
   setupFileInput();
   bindLiveControls();
