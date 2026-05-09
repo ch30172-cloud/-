@@ -1,0 +1,19 @@
+{
+  "name": "hebrew-paginator",
+  "version": "0.1.0",
+  "description": "Automatic Hebrew typesetting: Word docx → balanced two-column PDF",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "puppeteer": "^23.10.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

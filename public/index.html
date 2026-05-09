@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת עימוד אוטומטי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --panel: #fff;
+    --border: #d9d2c3;
+    --text: #1a1a1a;
+    --muted: #666;
+    --accent: #6b5d3f;
+    --accent-light: #d4c4a0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: 'Heebo', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    height: 100vh;
+  }
+  .sidebar {
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .sidebar h1 {
+    font-size: 18px;
+    margin: 0 0 4px;
+    font-family: 'Frank Ruhl Libre', serif;
+  }
+  .sidebar .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .block {
+    background: #faf7f0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .block-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  button {
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  button:hover { background: #5a4d34; }
+  button.secondary { background: #fff; color: var(--accent); }
+  button.secondary:hover { background: #f0ebe0; }
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .preset {
+    padding: 10px 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .preset.active { border-color: var(--accent); background: var(--accent-light); }
+  .file-drop {
+    border: 2px dashed var(--border);
+    padding: 20px;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .file-drop.dragging { border-color: var(--accent); background: #faf5e8; }
+  .file-info { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .preview {
+    flex: 1;
+    background: #e8e3d5;
+    overflow: auto;
+    padding: 30px;
+  }
+  .preview iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  .toolbar {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .status { font-size: 12px; color: var(--muted); margin-right: auto; }
+  .main { display: flex; flex-direction: column; height: 100vh; }
+  .actions { display: flex; gap: 8px; margin-top: 8px; }
+  .actions button { flex: 1; }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h1>מערכת עימוד אוטומטי</h1>
+    <div class="subtitle">Word → PDF בשני טורים מאוזנים</div>
+
+    <div class="block">
+      <div class="block-title">📄 העלאת קובץ Word</div>
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="fileInput" accept=".docx" style="display:none">
+        גררי קובץ .docx לכאן או לחצי לבחור
+      </div>
+      <div class="file-info" id="fileInfo"></div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">🎨 סגנון</div>
+      <div class="preset-grid" id="presetGrid"></div>
+      <div class="hint">בחירת סגנון מאתחלת את ההגדרות שלמטה</div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">📐 גודל עמוד ושוליים</div>
+      <div class="row">
+        <div><label>רוחב (מ"מ)</label><input type="number" id="pageW" value="148"></div>
+        <div><label>גובה (מ"מ)</label><input type="number" id="pageH" value="210"></div>
+      </div>
+      <div class="row">
+        <div><label>שוליים עליון</label><input type="number" id="mTop" value="18"></div>
+        <div><label>שוליים תחתון</label><input type="number" id="mBot" value="18"></div>
+      </div>
+      <div class="row">
+        <div><label>שוליים פנים (אגד)</label><input type="number" id="mIn" value="16"></div>
+        <div><label>שוליים חוץ</label><input type="number" id="mOut" value="14"></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">⚏ טורים</div>
+      <div class="row">
+        <div><label>מס' טורים</label><select id="colCount"><option>1</option><option selected>2</option></select></div>
+        <div><label>רווח (מ"מ)</label><input type="number" id="gutter" value="6"></div>
+      </div>
+      <div class="hint">העימוד מאזן את גובה שני הטורים בכל עמוד אוטומטית</div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">🔤 פונט גוף הטקסט</div>
+      <div class="row">
+        <div><label>גודל (pt)</label><input type="number" id="bodySize" value="11" step="0.5"></div>
+        <div><label>ליד (pt)</label><input type="number" id="bodyLh" value="14" step="0.5"></div>
+      </div>
+      <div><label>פונט</label>
+        <select id="bodyFont">
+          <option>Frank Ruhl Libre</option>
+          <option>Noto Serif Hebrew</option>
+          <option>Heebo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">📑 כותרת רצה</div>
+      <div><label>שם הספר</label><input type="text" id="bookName" value="מזבח אדמה"></div>
+      <div class="row" style="margin-top:8px">
+        <div><label>סוג מספור</label>
+          <select id="pnMode">
+            <option value="hebrew" selected>אותיות עבריות</option>
+            <option value="arabic">מספרים</option>
+            <option value="hebrew-spread">אותיות + נקודה/נקודתיים</option>
+          </select>
+        </div>
+        <div><label>התחלה מ-</label><input type="number" id="pnStart" value="1" min="1"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="renderBtn">⟳ עמדי</button>
+      <button id="pdfBtn" class="secondary">⬇ PDF</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="toolbar">
+      <div class="status" id="status">ממתינה להעלאת קובץ</div>
+      <button class="secondary" id="reflowBtn">רענני תצוגה</button>
+    </div>
+    <div class="preview" id="preview">
+      <div class="empty">העלי קובץ Word כדי להתחיל</div>
+    </div>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
