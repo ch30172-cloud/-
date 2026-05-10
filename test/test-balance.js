@@ -4,7 +4,7 @@ const path = require('path');
 
 // Extract the standalone helper functions from layout.js source.
 const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'layout.js'), 'utf8');
-const fns = ['countGaps', 'sumHeights', 'isFeasibleEqual', 'findBalancedSplit', 'computeEqualization', 'extractSpanTop', 'splitPages']
+const fns = ['countGaps', 'sumHeights', 'isFeasibleEqual', 'findBalancedSplit', 'computeEqualization', 'extractSpanTop', 'hoistClosingOrnaments', 'splitPages']
   .map(name => {
     const m = src.match(new RegExp(`function ${name}\\([\\s\\S]*?\\n\\}`));
     if (!m) throw new Error('missing ' + name);

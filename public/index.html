@@ -158,6 +158,10 @@
         <label>שם הספר</label>
         <input type="text" id="bookName" value="עימוטומט">
         <div class="row" style="margin-top:8px">
+          <div><label>מסכת</label><input type="text" id="hdrTractate" placeholder="זבחים"></div>
+          <div><label>חלוקה</label><input type="text" id="hdrSection" placeholder="דבר"></div>
+        </div>
+        <div class="row" style="margin-top:8px">
           <div><label>סוג מספור</label>
             <select id="pnMode">
               <option value="hebrew" selected>גימטריה</option>
@@ -169,9 +173,10 @@
         </div>
         <label style="margin-top:8px">סגנון</label>
         <select id="hdrStyle">
-          <option value="1" selected>שם + מספר</option>
+          <option value="1">שם + מספר</option>
           <option value="2">שם · פרק · מספר</option>
           <option value="3">פרק · מספר</option>
+          <option value="4" selected>קלאסי 4-רכיבים (אות · חלוקה · מסכת · שם)</option>
         </select>
       </section>
 

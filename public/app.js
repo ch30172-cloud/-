@@ -149,7 +149,13 @@ function gatherConfig() {
     margins: { topMm: +$('mTop').value, bottomMm: +$('mBot').value, insideMm: +$('mIn').value, outsideMm: +$('mOut').value },
     columns: { count: +$('colCount').value, gutterMm: +$('gutter').value },
     pageNumber: { mode: $('pnMode').value, startAt: +$('pnStart').value, enabled: true },
-    runningHeader: { enabled: true, style: +$('hdrStyle').value, showRule: true },
+    runningHeader: {
+      enabled: true,
+      style: +$('hdrStyle').value,
+      showRule: +$('hdrStyle').value !== 4,
+      tractate: $('hdrTractate')?.value || '',
+      section: $('hdrSection')?.value || '',
+    },
     dropCap: { enabled: $('dcOn').value === '1', minLines: +$('dcMin').value, heightPx: 40, gapPx: 5 },
     antiRiver: { maxWordSpacePct: +$('arWord').value, glyphScalePct: +$('arGlyph').value, lastLineCenter: true },
     fonts: {
@@ -486,8 +492,8 @@ async function exportHtml() {
 // ============== Live controls ==============
 function bindLive() {
   const ids = ['pageW','pageH','mTop','mBot','mIn','mOut','colCount','gutter',
-              'bookName','pnMode','pnStart','hdrStyle','bodySize','bodyLh',
-              'dcOn','dcMin','arWord','arGlyph'];
+              'bookName','hdrTractate','hdrSection','pnMode','pnStart','hdrStyle',
+              'bodySize','bodyLh','dcOn','dcMin','arWord','arGlyph'];
   ids.forEach(id => {
     const el = $(id);
     if (!el) return;
