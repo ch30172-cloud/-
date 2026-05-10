@@ -1,7 +1,7 @@
 {
-  "name": "hebrew-paginator",
-  "version": "0.1.0",
-  "description": "Automatic Hebrew typesetting: Word docx → balanced two-column PDF",
+  "name": "imutomat",
+  "version": "1.0.0",
+  "description": "Imutomat — SaaS Hebrew typesetter: navy+gold workspace, baseline grid, balanced two-column pagination, vector PDF.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

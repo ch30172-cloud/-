@@ -3,284 +3,233 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>מערכת עימוד אוטומטי</title>
+<title>Imutomat — אִמותומאט</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #f4f1ea;
-    --panel: #fff;
-    --border: #d9d2c3;
-    --text: #1a1a1a;
-    --muted: #666;
-    --accent: #6b5d3f;
-    --accent-light: #d4c4a0;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; height: 100%; }
-  body {
-    font-family: 'Heebo', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    direction: rtl;
-  }
-  .app {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    height: 100vh;
-  }
-  .sidebar {
-    background: var(--panel);
-    border-left: 1px solid var(--border);
-    padding: 20px;
-    overflow-y: auto;
-  }
-  .sidebar h1 {
-    font-size: 18px;
-    margin: 0 0 4px;
-    font-family: 'Frank Ruhl Libre', serif;
-  }
-  .sidebar .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-  .block {
-    background: #faf7f0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 14px;
-  }
-  .block-title {
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 10px;
-    color: var(--accent);
-  }
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  input[type="text"], input[type="number"], select {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: #fff;
-    font-family: inherit;
-    font-size: 13px;
-  }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  button {
-    padding: 8px 14px;
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  button:hover { background: #5a4d34; }
-  button.secondary { background: #fff; color: var(--accent); }
-  button.secondary:hover { background: #f0ebe0; }
-  .preset-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .preset {
-    padding: 10px 6px;
-    border: 1px solid var(--border);
-    background: #fff;
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  .preset.active { border-color: var(--accent); background: var(--accent-light); }
-  .file-drop {
-    border: 2px dashed var(--border);
-    padding: 20px;
-    text-align: center;
-    border-radius: 6px;
-    cursor: pointer;
-    color: var(--muted);
-  }
-  .file-drop.dragging { border-color: var(--accent); background: #faf5e8; }
-  .file-info { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .preview {
-    flex: 1;
-    background: #e8e3d5;
-    overflow: auto;
-    padding: 30px;
-  }
-  .preview iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-  .toolbar {
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 20px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .status { font-size: 12px; color: var(--muted); margin-right: auto; }
-  .main { display: flex; flex-direction: column; height: 100vh; }
-  .actions { display: flex; gap: 8px; margin-top: 8px; }
-  .actions button { flex: 1; }
-  .hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-  .empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--muted);
-    font-size: 14px;
-  }
-</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@300;400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+
+<!-- ===== TOP: Imutomatics progress bar ===== -->
+<div class="imutomatics" role="progressbar" aria-label="Imutomatics" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="imutomatics-track"></div>
+  <div class="imutomatics-fill" id="imutomaticsFill"></div>
+  <div class="imutomatics-label" id="imutomaticsLabel">Imutomatics · 0 / 0</div>
+</div>
+
 <div class="app">
-  <aside class="sidebar">
-    <h1>מערכת עימוד אוטומטי</h1>
-    <div class="subtitle">Word → PDF בשני טורים מאוזנים</div>
 
-    <div class="block">
-      <div class="block-title">📄 העלאת קובץ Word</div>
-      <div class="file-drop" id="fileDrop">
-        <input type="file" id="fileInput" accept=".docx" style="display:none">
-        גררי קובץ .docx לכאן או לחצי לבחור
-      </div>
-      <div class="file-info" id="fileInfo"></div>
-    </div>
+  <!-- ===== STAGE (workspace) ===== -->
+  <main class="stage" id="stage">
+    <div class="stage-vignette"></div>
 
-    <div class="block">
-      <div class="block-title">🎨 סגנון</div>
-      <div class="preset-grid" id="presetGrid"></div>
-      <div class="hint">בחירת סגנון מאתחלת את ההגדרות שלמטה</div>
-    </div>
+    <header class="stage-bar">
+      <div class="brand">
+        <span class="brand-mark">א</span>
+        <span class="brand-name">אִמותומאט<span class="brand-en"> · Imutomat</span></span>
+      </div>
+      <div class="stage-tools">
+        <button class="ghost" id="newDocBtn" title="חדש">חדש</button>
+        <label class="ghost" for="fileInput">ייבוא Word</label>
+        <input type="file" id="fileInput" accept=".docx" hidden>
+        <button class="ghost" id="reflowBtn" title="עימוד מחדש">↻ עימוד</button>
+        <button class="gold" id="pdfBtn" title="ייצוא PDF">⬇ PDF וקטורי</button>
+      </div>
+    </header>
 
-    <div class="block">
-      <div class="block-title">📐 גודל עמוד ושוליים</div>
-      <div class="row">
-        <div><label>רוחב (מ"מ)</label><input type="number" id="pageW" value="148"></div>
-        <div><label>גובה (מ"מ)</label><input type="number" id="pageH" value="210"></div>
+    <!-- Floating format toolbar (above the spread) -->
+    <div class="float-toolbar" id="floatToolbar" aria-label="סרגל עיצוב">
+      <div class="ft-group" role="radiogroup" aria-label="צבע">
+        <button class="swatch" data-color="#d23a3a" style="--c:#d23a3a" title="אדום"></button>
+        <button class="swatch" data-color="#e58a2a" style="--c:#e58a2a" title="כתום"></button>
+        <button class="swatch" data-color="#3aa55c" style="--c:#3aa55c" title="ירוק"></button>
+        <button class="swatch" data-color="#2a6df4" style="--c:#2a6df4" title="כחול"></button>
+        <button class="swatch" data-color="#ffffff" style="--c:#ffffff" title="לבן"></button>
       </div>
-      <div class="row">
-        <div><label>שוליים עליון</label><input type="number" id="mTop" value="18"></div>
-        <div><label>שוליים תחתון</label><input type="number" id="mBot" value="18"></div>
+      <div class="ft-divider"></div>
+      <div class="ft-group" role="group" aria-label="טקסט">
+        <button class="ft-btn" data-tool="bold" title="מודגש"><b>B</b></button>
+        <button class="ft-btn" data-tool="italic" title="נטוי"><i>I</i></button>
+        <button class="ft-btn" data-tool="under" title="קו תחתי"><u>U</u></button>
       </div>
-      <div class="row">
-        <div><label>שוליים פנים (אגד)</label><input type="number" id="mIn" value="16"></div>
-        <div><label>שוליים חוץ</label><input type="number" id="mOut" value="14"></div>
-      </div>
-    </div>
-
-    <div class="block">
-      <div class="block-title">⚏ טורים</div>
-      <div class="row">
-        <div><label>מס' טורים</label><select id="colCount"><option>1</option><option selected>2</option></select></div>
-        <div><label>רווח (מ"מ)</label><input type="number" id="gutter" value="6"></div>
-      </div>
-      <div class="hint">העימוד מאזן את גובה שני הטורים בכל עמוד אוטומטית</div>
-    </div>
-
-    <div class="block">
-      <div class="block-title">🔤 גוף הטקסט</div>
-      <div><label>פונט</label><select id="body_font" data-font></select></div>
-      <div class="row3" style="margin-top:6px">
-        <div><label>גודל</label><input type="number" id="body_size" value="11" step="0.5"></div>
-        <div><label>ליד</label><input type="number" id="body_lh" value="14" step="0.5"></div>
-        <div><label>משקל</label><select id="body_weight"><option value="400" selected>רגיל</option><option value="700">מודגש</option></select></div>
-      </div>
-      <div><label>יישור</label>
-        <select id="body_align">
-          <option value="justify" selected>מלא (Justify)</option>
-          <option value="right">ימין</option>
-          <option value="center">אמצע</option>
-          <option value="left">שמאל</option>
-        </select>
+      <div class="ft-divider"></div>
+      <div class="ft-group" role="group" aria-label="הערות">
+        <button class="ft-btn" data-tool="squiggle" title="קו גלי">∿</button>
+        <button class="ft-btn" data-tool="draw" title="ציור">✎</button>
+        <button class="ft-btn" data-tool="erase" title="מחק">⌫</button>
       </div>
     </div>
 
-    <div class="block">
-      <div class="block-title">⬢ כותרת ראשית (h1) — פרושה מעל הטורים</div>
-      <div><label>פונט</label><select id="h1_font" data-font></select></div>
-      <div class="row3" style="margin-top:6px">
-        <div><label>גודל</label><input type="number" id="h1_size" value="22" step="0.5"></div>
-        <div><label>ליד</label><input type="number" id="h1_lh" value="28" step="0.5"></div>
-        <div><label>משקל</label><select id="h1_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
+    <div class="spread" id="spread">
+      <div class="empty-state">
+        <div class="empty-mark">א</div>
+        <div class="empty-title">הספרייה העתיקה</div>
+        <div class="empty-sub">גררי קובץ Word, או לחצי "ייבוא Word"</div>
       </div>
-      <div class="row">
-        <div><label>צבע</label><input type="color" id="h1_color" value="#1a1a1a"></div>
-        <div><label>רווח אחרי (מ"מ)</label><input type="number" id="h1_after" value="4" step="0.5"></div>
-      </div>
-      <div class="hint">תופיע ממורכזת באמצע מעל שני הטורים</div>
-    </div>
-
-    <div class="block">
-      <div class="block-title">⬢ כותרת משנה (h2)</div>
-      <div><label>פונט</label><select id="h2_font" data-font></select></div>
-      <div class="row3" style="margin-top:6px">
-        <div><label>גודל</label><input type="number" id="h2_size" value="14" step="0.5"></div>
-        <div><label>ליד</label><input type="number" id="h2_lh" value="18" step="0.5"></div>
-        <div><label>משקל</label><select id="h2_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
-      </div>
-      <div class="row3">
-        <div><label>יישור</label>
-          <select id="h2_align"><option value="right">ימין</option><option value="center" selected>אמצע</option><option value="left">שמאל</option></select>
-        </div>
-        <div><label>צבע</label><input type="color" id="h2_color" value="#1a1a1a"></div>
-        <div><label>אחרי (מ"מ)</label><input type="number" id="h2_after" value="1" step="0.5"></div>
-      </div>
-    </div>
-
-    <div class="block">
-      <div class="block-title">⬢ כותרת רמה 3 (h3)</div>
-      <div><label>פונט</label><select id="h3_font" data-font></select></div>
-      <div class="row3" style="margin-top:6px">
-        <div><label>גודל</label><input type="number" id="h3_size" value="12" step="0.5"></div>
-        <div><label>ליד</label><input type="number" id="h3_lh" value="16" step="0.5"></div>
-        <div><label>משקל</label><select id="h3_weight"><option value="400">רגיל</option><option value="700" selected>מודגש</option></select></div>
-      </div>
-      <div class="row3">
-        <div><label>יישור</label>
-          <select id="h3_align"><option value="right" selected>ימין</option><option value="center">אמצע</option><option value="left">שמאל</option></select>
-        </div>
-        <div><label>צבע</label><input type="color" id="h3_color" value="#1a1a1a"></div>
-        <div><label>אחרי (מ"מ)</label><input type="number" id="h3_after" value="0.5" step="0.5"></div>
-      </div>
-    </div>
-
-    <div class="block">
-      <div class="block-title">📑 כותרת רצה</div>
-      <div><label>שם הספר</label><input type="text" id="bookName" value="מזבח אדמה"></div>
-      <div class="row" style="margin-top:8px">
-        <div><label>סוג מספור</label>
-          <select id="pnMode">
-            <option value="hebrew" selected>אותיות עבריות</option>
-            <option value="arabic">מספרים</option>
-            <option value="hebrew-spread">אותיות + נקודה/נקודתיים</option>
-          </select>
-        </div>
-        <div><label>התחלה מ-</label><input type="number" id="pnStart" value="1" min="1"></div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button id="renderBtn">⟳ עמדי</button>
-      <button id="pdfBtn" class="secondary">⬇ PDF</button>
-    </div>
-  </aside>
-
-  <main class="main">
-    <div class="toolbar">
-      <div class="status" id="status">ממתינה להעלאת קובץ</div>
-      <button class="secondary" id="reflowBtn">רענני תצוגה</button>
-    </div>
-    <div class="preview" id="preview">
-      <div class="empty">העלי קובץ Word כדי להתחיל</div>
     </div>
   </main>
+
+  <!-- ===== RIGHT SIDEBAR ===== -->
+  <aside class="rail" id="rail">
+    <nav class="rail-tabs" id="railTabs">
+      <button class="rail-tab active" data-tab="dash">לוח</button>
+      <button class="rail-tab" data-tab="page">עמוד</button>
+      <button class="rail-tab" data-tab="head">כותרות</button>
+      <button class="rail-tab" data-tab="style">סגנונות</button>
+      <button class="rail-tab" data-tab="export">ייצוא</button>
+      <button class="rail-tab" data-tab="cover">כריכות</button>
+      <button class="rail-tab" data-tab="acct">חשבון</button>
+      <button class="rail-tab" data-tab="help">עזרה</button>
+    </nav>
+
+    <div class="rail-body">
+      <!-- Dashboard -->
+      <section class="rail-pane active" data-pane="dash">
+        <div class="pane-title">לוח מחוונים</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-k">עמודים</div><div class="stat-v" id="kPages">0</div></div>
+          <div class="stat"><div class="stat-k">מילים</div><div class="stat-v" id="kWords">0</div></div>
+          <div class="stat"><div class="stat-k">תווים</div><div class="stat-v" id="kChars">0</div></div>
+          <div class="stat"><div class="stat-k">פסקאות</div><div class="stat-v" id="kParas">0</div></div>
+        </div>
+        <div class="pane-sub">איזון טורים</div>
+        <div class="balance-bar"><div class="balance-fill" id="balanceFill" style="width:0%"></div></div>
+        <div class="hint">קצב רשת בסיסית: <b>20px</b>. גימטריה: א–ת"ק.</div>
+      </section>
+
+      <!-- Page settings -->
+      <section class="rail-pane" data-pane="page">
+        <div class="pane-title">הגדרות עמוד</div>
+        <div class="row">
+          <div><label>רוחב (מ"מ)</label><input type="number" id="pageW" value="170"></div>
+          <div><label>גובה (מ"מ)</label><input type="number" id="pageH" value="240"></div>
+        </div>
+        <div class="row">
+          <div><label>עליון</label><input type="number" id="mTop" value="25"></div>
+          <div><label>תחתון</label><input type="number" id="mBot" value="25"></div>
+        </div>
+        <div class="row">
+          <div><label>פנים (אגד)</label><input type="number" id="mIn" value="20"></div>
+          <div><label>חוץ</label><input type="number" id="mOut" value="20"></div>
+        </div>
+        <div class="row">
+          <div><label>טורים</label><select id="colCount"><option>1</option><option selected>2</option></select></div>
+          <div><label>גוטר (מ"מ)</label><input type="number" id="gutter" value="6"></div>
+        </div>
+        <div class="pane-sub">גוף הטקסט</div>
+        <div class="row">
+          <div><label>גודל (pt)</label><input type="number" id="bodySize" value="11" step="0.5"></div>
+          <div><label>ריווח</label><select id="bodyLh"><option value="20" selected>20px (1)</option><option value="40">40px (2)</option></select></div>
+        </div>
+      </section>
+
+      <!-- Running headers -->
+      <section class="rail-pane" data-pane="head">
+        <div class="pane-title">כותרות רצות</div>
+        <label>שם הספר</label>
+        <input type="text" id="bookName" value="אִמותומאט">
+        <div class="row" style="margin-top:8px">
+          <div><label>סוג מספור</label>
+            <select id="pnMode">
+              <option value="hebrew" selected>גימטריה</option>
+              <option value="arabic">מספרים</option>
+              <option value="hebrew-spread">דף · עמוד</option>
+            </select>
+          </div>
+          <div><label>החל מ-</label><input type="number" id="pnStart" value="1" min="1"></div>
+        </div>
+        <label style="margin-top:8px">סגנון</label>
+        <select id="hdrStyle">
+          <option value="1" selected>שם + מספר</option>
+          <option value="2">שם · פרק · מספר</option>
+          <option value="3">פרק · מספר</option>
+        </select>
+      </section>
+
+      <!-- Style mapping (Vilna/Rashi) -->
+      <section class="rail-pane" data-pane="style">
+        <div class="pane-title">מיפוי סגנונות</div>
+        <div class="hint">בחירת תבנית מאתחלת את הטיפוגרפיה. שינויי משתמש מנצחים את האוטומציה (שריון).</div>
+        <div class="preset-grid" id="presetGrid"></div>
+        <div class="pane-sub">חלן (Drop-cap)</div>
+        <div class="row">
+          <div><label>פעיל</label><select id="dcOn"><option value="1" selected>כן</option><option value="0">לא</option></select></div>
+          <div><label>מינ. שורות</label><input type="number" id="dcMin" value="3" min="2"></div>
+        </div>
+        <div class="pane-sub">Anti-River</div>
+        <div class="row">
+          <div><label>תקרת רווח</label><input type="number" id="arWord" value="15" min="0" max="30"></div>
+          <div><label>Glyph ±%</label><input type="number" id="arGlyph" value="1" min="0" max="3" step="0.5"></div>
+        </div>
+      </section>
+
+      <!-- Export & print -->
+      <section class="rail-pane" data-pane="export">
+        <div class="pane-title">ייצוא והדפסה</div>
+        <button class="primary" id="exportPdf">⬇ PDF וקטורי (שחור על לבן)</button>
+        <button class="ghost" id="exportHtml" style="margin-top:6px">HTML עמודים</button>
+        <button class="ghost" id="printNow" style="margin-top:6px">🖨 הדפסה</button>
+        <div class="hint">השפעות הזהב נשמרות במסך בלבד; הייצוא לוקטורי שחור-לבן.</div>
+      </section>
+
+      <!-- Covers -->
+      <section class="rail-pane" data-pane="cover">
+        <div class="pane-title">כריכות</div>
+        <div class="cover-list" id="coverList">
+          <div class="cover-card">קלאסית</div>
+          <div class="cover-card">מודרנית</div>
+          <div class="cover-card">מינימליסטית</div>
+        </div>
+        <div class="hint">תבניות כריכה — בקרוב.</div>
+      </section>
+
+      <!-- Account -->
+      <section class="rail-pane" data-pane="acct">
+        <div class="pane-title">חשבון</div>
+        <div class="acct-card">
+          <div class="acct-name">אורח</div>
+          <div class="acct-plan">תוכנית: Trial</div>
+        </div>
+        <button class="ghost">התחברות</button>
+      </section>
+
+      <!-- Help -->
+      <section class="rail-pane" data-pane="help">
+        <div class="pane-title">מרכז עזרה</div>
+        <ul class="help-list">
+          <li>קיצור: <kbd>Ctrl</kbd>+<kbd>R</kbd> — עימוד מחדש</li>
+          <li>קיצור: <kbd>Ctrl</kbd>+<kbd>P</kbd> — הדפסה</li>
+          <li>קיצור: <kbd>+</kbd> / <kbd>-</kbd> — Push/Pull על טור פעיל</li>
+          <li>ערוץ תמיכה — בקרוב</li>
+        </ul>
+      </section>
+    </div>
+  </aside>
 </div>
-<script src="/app.js"></script>
+
+<!-- ===== FOOTER STATUS BAR ===== -->
+<footer class="footbar" id="footbar">
+  <div class="fb-cell"><span class="fb-k">Pages</span><span class="fb-v" id="fbPages">0</span></div>
+  <div class="fb-cell"><span class="fb-k">Words</span><span class="fb-v" id="fbWords">0</span></div>
+  <div class="fb-cell"><span class="fb-k">Chars</span><span class="fb-v" id="fbChars">0</span></div>
+  <div class="fb-cell"><span class="fb-k">Paragraphs</span><span class="fb-v" id="fbParas">0</span></div>
+  <div class="fb-cell"><span class="fb-k">Page Size</span><span class="fb-v" id="fbSize">17×24</span></div>
+  <div class="fb-cell fb-grow"><span class="fb-k">Status</span><span class="fb-v" id="fbStatus">ממתינה</span></div>
+</footer>
+
+<!-- Word inspector popup -->
+<div class="word-pop" id="wordPop" hidden>
+  <div class="wp-arrow"></div>
+  <div class="wp-head"><span id="wpWord">—</span></div>
+  <div class="wp-body">
+    <div><span>אורך</span><b id="wpLen">0</b></div>
+    <div><span>הופעות</span><b id="wpFreq">0</b></div>
+    <div><span>פסקה</span><b id="wpPara">—</b></div>
+    <div><span>עמוד</span><b id="wpPage">—</b></div>
+  </div>
+</div>
+
+<script src="/app.js" type="module"></script>
 </body>
 </html>

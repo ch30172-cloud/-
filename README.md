@@ -1,52 +1,68 @@
-# מערכת עימוד אוטומטי - Hebrew Auto Paginator
+# Imutomat · אִמותומאט
 
-מערכת Web ב-Node.js שמקבלת קובץ Word (.docx) ומפיקה PDF מעומד בפורמט שני טורים מאוזנים, עם כותרות רצות ומספור אוטומטי. מתאים לספרי קודש, מאמרים אקדמיים וכד'.
+A production-ready SaaS-shaped Hebrew typesetter. Deep-navy "ancient library"
+workspace, brushed-gold accents, baseline-grid typography, balanced two-column
+pagination with surgical drop-caps ("חלן"), Hebrew gematria numbering, and a
+vector-clean PDF export.
 
-## תכונות
+## Layout canon
 
-- **טעינת .docx**: שמירה על היררכיית כותרות (Title, Heading 1/2/3) דרך `mammoth`.
-- **מנוע עימוד מותאם אישית**: מודד כל שורה (`Range.getClientRects`) ומפצל לעמודים תוך **איזון גובה הטורים** באמצעות חיפוש נקודת הפיצול האופטימלית בכל עמוד.
-- **כותרות רצות + מספרי עמוד**: 3 סגנונות, מספור באותיות עבריות (כולל גרשיים) או בספרות.
-- **הגדרות מלאות**: גודל עמוד, שוליים פנים/חוץ, מספר טורים, רווח טורים, פונט וגודל גוף הטקסט.
-- **סגנונות מוכנים**: ספר קודש, מאמר אקדמי, רומן.
-- **תצוגה מקדימה חיה** + **ייצוא PDF** דרך Puppeteer.
+- Page **17 × 24 cm**, margins 2.5 cm top/bottom + 2.0 cm sides, gutter 0.6 cm,
+  two columns at **6.2 cm** each. Net content height **19 cm**.
+- Baseline grid **20 px** (15 pt). Every line snaps to `y = n · 20`.
+- Anti-river typography: word-spacing cap (≤ 15 %), glyph scaling ± 1 %, last
+  line centred via `text-align-last: center`.
+- Drop-cap ("חלן"): paragraphs ≥ 3 lines get a gold-brushed first word at
+  40 px (2 baseline units); line 2 hanging-indent at W + 5 px.
+- Hebrew page numbering א, ב, …, ט"ו, ט"ז, …, ת"ק.
+- Footnotes: two-column block at page bottom, separated by a thin gold rule.
 
-## הרצה
+## Interaction model
+
+- **Imutomatics** top progress bar — `pages_rendered / total_pages`, animated.
+- **Right rail**: Dashboard · Page · Headers · Styles (Vilna/Rashi) · Export ·
+  Covers · Account · Help.
+- **Footer**: live `Pages | Words | Chars | Paragraphs | Page Size`.
+- **Floating toolbar**: 5-colour highlighter (red/orange/green/blue/white),
+  B/I/U, squiggle / draw / erase.
+- **Push/Pull knobs** (+ / −) next to every column → `manualOffset` in baseline
+  units. User overrides freeze auto-balance for that page (precedence).
+- **Debounced 300 ms** scoped reflow — recomputes only from the active page
+  forward.
+- Click a word → ivory/gold popup with length, occurrences, paragraph, page.
+
+## Architecture
+
+```
+server.js              Express; /api/upload, /api/render, /api/presets,
+                       /api/logic → "Access Denied" guard
+lib/parse-docx.js      mammoth → items
+lib/layout.js          measure (Puppeteer) + balanced split + footnote attach
+lib/template.js        defaults · CSS (baseline grid, drop-cap, anti-river,
+                       gold-on-screen) · gematria (א..ת"ק)
+lib/presets.js         וילנא · רש"י · ספר קודש
+lib/render.js          Puppeteer → vector PDF
+public/index.html      Imutomat shell
+public/styles.css      navy + brushed-gold theme
+public/app.js          state machine, IndexedDB persistence, scoped reflow,
+                       word inspector, ± offsets, exports
+public/db.js           IndexedDB wrapper
+public/worker.js       off-main-thread telemetry + balance calc
+```
+
+State is persisted in IndexedDB (`imutomat.docs`) and survives page reload.
+
+## Run
 
 ```bash
 npm install
 npm start
-# פתחי http://localhost:3000
+# open http://localhost:3000
 ```
 
-## ארכיטקטורה
+## Security
 
-```
-server.js          - Express: /api/upload, /api/render
-lib/parse-docx.js  - mammoth → items [{type, text}]
-lib/layout.js      - מודד שורות + מפצל לעמודים מאוזנים
-lib/template.js    - HTML/CSS לעמודים (RTL, @page)
-lib/render.js      - Puppeteer → PDF
-lib/presets.js     - 3 סגנונות מוכנים
-public/            - Frontend (vanilla JS)
-```
-
-### אלגוריתם איזון הטורים (lib/layout.js)
-
-1. **מדידה**: רנדור כל הבלוקים בעמודה אחת ברוחב טור-יחיד. עבור כל בלוק, פיצול ל"שורות" באמצעות `Range.getClientRects()` ושמירת גובה כל שורה.
-2. **חיתוך לעמודים** (`splitPages`): גרידי - מרחיב את `end` כל עוד קיים `mid` ב-`[start..end]` ש-`sum(start..mid) ≤ colHeight` וגם `sum(mid..end) ≤ colHeight`.
-3. **בחירת `mid`** (`bestSplitWithin`): מבין כל פיצולי הטור החוקיים בעמוד הנוכחי, בוחר את ה-`mid` שממזער `|height(colA) - height(colB)|`.
-4. **break-before**: כותרת `h1` תמיד מתחילה עמוד חדש (אפשר לשלוט עם `breakH1OnNewPage`).
-
-זוהי הסיבה שהטורים יוצאים מאוזנים גם כשהבלוק האחרון בעמוד גולש - הוא נשבר ב-mid אופטימלי.
-
-## API
-
-- `POST /api/upload` - multipart, שדה `file` עם .docx → `{title, items, messages}`
-- `POST /api/render` - JSON `{items, presetId?, configOverrides?, format: 'html'|'pdf'}`
-- `GET /api/presets` - רשימת preset IDs
-
-## הערות
-
-- העימוד דורש Chromium (מותקן אוטומטית עם Puppeteer). בשרת בלי GUI חובה `--no-sandbox` (כבר מוגדר).
-- הערות שוליים נתמכות במבנה הנתונים אך עדיין לא ממוקמות בתחתית כל עמוד - הן זורמות בטקסט. (TODO).
+Any request to `/api/logic`, `/api/internals`, `/api/algorithm`, `/api/source`,
+or `/api/core` is answered with `403 Imutomat Core Logic is proprietary and
+protected. Access Denied.` The same string is exposed in the frontend as
+`window.Imutomat.describe()`.

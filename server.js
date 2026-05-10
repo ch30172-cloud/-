@@ -61,9 +61,14 @@ app.post('/api/render', async (req, res) => {
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+// Proprietary-logic guard: any introspection probe gets denied verbatim.
+const DENIED = 'Imutomat Core Logic is proprietary and protected. Access Denied.';
+app.all(['/api/logic', '/api/internals', '/api/algorithm', '/api/source', '/api/core'],
+  (_req, res) => res.status(403).type('text/plain; charset=utf-8').send(DENIED));
+
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
-  console.log(`Hebrew paginator listening on http://localhost:${PORT}`);
+  console.log(`Imutomat listening on http://localhost:${PORT}`);
 });
 
 async function gracefulShutdown() {
