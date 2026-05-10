@@ -30,13 +30,48 @@ const fbStatus = (msg) => { $('fbStatus').textContent = msg; };
 
 // ============== Tabs ==============
 function setupTabs() {
-  document.querySelectorAll('.rail-tab').forEach((t) => {
+  document.querySelectorAll('.rail-link').forEach((t) => {
     t.addEventListener('click', () => {
-      document.querySelectorAll('.rail-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.rail-link').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.rail-pane').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      document.querySelector(`.rail-pane[data-pane="${t.dataset.tab}"]`).classList.add('active');
+      const pane = document.querySelector(`.rail-pane[data-pane="${t.dataset.tab}"]`);
+      if (pane) pane.classList.add('active');
     });
+  });
+}
+
+// ============== Dock (bottom floating page-nav) ==============
+let stageZoom = 1;
+function setupDock() {
+  const z = (delta) => {
+    stageZoom = Math.max(0.4, Math.min(2.5, stageZoom + delta));
+    applyZoom();
+  };
+  $('zoomInBtn')?.addEventListener('click', () => z(+0.1));
+  $('zoomOutBtn')?.addEventListener('click', () => z(-0.1));
+  $('fitBtn')?.addEventListener('click', () => { stageZoom = 1; applyZoom(); });
+  $('nextPageBtn')?.addEventListener('click', () => {
+    const cards = [...document.querySelectorAll('.page-card')];
+    const idx = cards.findIndex(c => c.classList.contains('active'));
+    const next = cards[(idx + 1) % cards.length];
+    if (next) {
+      cards.forEach(c => c.classList.remove('active'));
+      next.classList.add('active');
+      next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+function applyZoom() {
+  document.querySelectorAll('iframe.page-iframe').forEach((f) => {
+    const base = computeScale(+$('pageW').value, +$('pageH').value);
+    f.style.transform = `scale(${base * stageZoom})`;
+    const card = f.closest('.page-card');
+    if (card) {
+      const pw = +$('pageW').value, ph = +$('pageH').value;
+      card.style.width = `${pw * base * stageZoom * 3.78}px`;
+      card.style.height = `${ph * base * stageZoom * 3.78}px`;
+    }
   });
 }
 
@@ -347,10 +382,13 @@ function updateTelemetry() {
 
 function updateImutomatics(rendered, total) {
   const pct = total > 0 ? (rendered / total) * 100 : 0;
-  $('imutomaticsFill').style.width = `${Math.min(100, pct)}%`;
-  $('imutomaticsLabel').textContent = `Imutomatics · ${rendered} / ${total}`;
+  const p = Math.min(100, pct);
+  $('imutomaticsFill').style.width = `${p}%`;
+  $('imutomaticsLabel').textContent = 'אימוטומטיים';
   const el = document.querySelector('.imutomatics');
-  el.setAttribute('aria-valuenow', Math.round(pct));
+  if (el) el.setAttribute('aria-valuenow', Math.round(p));
+  const rp = $('railProgressFill');
+  if (rp) rp.style.width = `${p}%`;
 }
 
 // ============== Debounced + scoped reflow ==============
@@ -540,6 +578,7 @@ async function restore() {
   setupTabs();
   setupFileInput();
   setupFloatToolbar();
+  setupDock();
   await loadPresets();
   bindLive();
   await restore();

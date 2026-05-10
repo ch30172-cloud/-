@@ -3,43 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Imutomat — אִמותומאט</title>
+<title>עימוטומט · עימוד מדויק בתוך דקות</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@300;400;500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700;900&family=Heebo:wght@300;400;500;700;900&family=Suez+One&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
-<!-- ===== TOP: Imutomatics progress bar ===== -->
-<div class="imutomatics" role="progressbar" aria-label="Imutomatics" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-  <div class="imutomatics-track"></div>
-  <div class="imutomatics-fill" id="imutomaticsFill"></div>
-  <div class="imutomatics-label" id="imutomaticsLabel">Imutomatics · 0 / 0</div>
+<div class="library-bg">
+  <div class="library-vignette"></div>
+  <div class="library-glow library-glow-l"></div>
+  <div class="library-glow library-glow-r"></div>
 </div>
 
 <div class="app">
 
+  <!-- ===== Top action bar (left side, over stage) ===== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="user-chip" title="פרופיל"><span>👤</span></button>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="edit">הגהה <span class="dot">●</span></button>
+        <button class="mode-tab" data-mode="view">הצבעה <span class="dot">●</span></button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="undoBtn" title="ביטול">↺</button>
+      <button class="icon-btn" id="redoBtn" title="חזרה">↻</button>
+      <div class="imutomatics" role="progressbar" aria-label="אימוטומטיים" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span class="imutomatics-label" id="imutomaticsLabel">אימוטומטיים</span>
+        <div class="imutomatics-track">
+          <div class="imutomatics-fill" id="imutomaticsFill"></div>
+        </div>
+        <span class="imutomatics-info">ⓘ</span>
+      </div>
+    </div>
+  </header>
+
   <!-- ===== STAGE (workspace) ===== -->
   <main class="stage" id="stage">
-    <div class="stage-vignette"></div>
-
-    <header class="stage-bar">
-      <div class="brand">
-        <span class="brand-mark">א</span>
-        <span class="brand-name">אִמותומאט<span class="brand-en"> · Imutomat</span></span>
-      </div>
-      <div class="stage-tools">
-        <button class="ghost" id="newDocBtn" title="חדש">חדש</button>
-        <label class="ghost" for="fileInput">ייבוא Word</label>
-        <input type="file" id="fileInput" accept=".docx" hidden>
-        <button class="ghost" id="reflowBtn" title="עימוד מחדש">↻ עימוד</button>
-        <button class="gold" id="pdfBtn" title="ייצוא PDF">⬇ PDF וקטורי</button>
-      </div>
-    </header>
 
     <!-- Floating format toolbar (above the spread) -->
-    <div class="float-toolbar" id="floatToolbar" aria-label="סרגל עיצוב">
+    <div class="float-toolbar" id="floatToolbar" aria-label="סרגל עיצוב" hidden>
       <div class="ft-group" role="radiogroup" aria-label="צבע">
         <button class="swatch" data-color="#d23a3a" style="--c:#d23a3a" title="אדום"></button>
         <button class="swatch" data-color="#e58a2a" style="--c:#e58a2a" title="כתום"></button>
@@ -63,24 +69,46 @@
 
     <div class="spread" id="spread">
       <div class="empty-state">
-        <div class="empty-mark">א</div>
-        <div class="empty-title">הספרייה העתיקה</div>
-        <div class="empty-sub">גררי קובץ Word, או לחצי "ייבוא Word"</div>
+        <h1 class="brand-3d brand-3d-lg">עימוטומט</h1>
+        <div class="brand-tagline">עימוד מדויק בתוך דקות</div>
+        <label class="cta-import" for="fileInput">⬆ ייבוא קובץ Word</label>
+        <input type="file" id="fileInput" accept=".docx" hidden>
       </div>
     </div>
   </main>
 
   <!-- ===== RIGHT SIDEBAR ===== -->
   <aside class="rail" id="rail">
-    <nav class="rail-tabs" id="railTabs">
-      <button class="rail-tab active" data-tab="dash">לוח</button>
-      <button class="rail-tab" data-tab="page">עמוד</button>
-      <button class="rail-tab" data-tab="head">כותרות</button>
-      <button class="rail-tab" data-tab="style">סגנונות</button>
-      <button class="rail-tab" data-tab="export">ייצוא</button>
-      <button class="rail-tab" data-tab="cover">כריכות</button>
-      <button class="rail-tab" data-tab="acct">חשבון</button>
-      <button class="rail-tab" data-tab="help">עזרה</button>
+    <div class="rail-brand">
+      <div class="brand-3d">עימוטומט</div>
+      <div class="rail-progress">
+        <span class="rail-progress-icon">𓀀</span>
+        <div class="rail-progress-track"><div class="rail-progress-fill" id="railProgressFill"></div></div>
+      </div>
+    </div>
+
+    <nav class="rail-nav" id="railTabs">
+      <button class="rail-link active" data-tab="dash">
+        <span class="rl-text">בית</span><span class="rl-icon">⌂</span>
+      </button>
+      <button class="rail-link" data-tab="page">
+        <span class="rl-text">הגדרות עמוד</span><span class="rl-icon">⚙</span>
+      </button>
+      <button class="rail-link" data-tab="head">
+        <span class="rl-text">כותרת רצה</span><span class="rl-icon">¶</span>
+      </button>
+      <button class="rail-link" data-tab="style">
+        <span class="rl-text">סגנונות</span><span class="rl-icon">✎</span>
+      </button>
+      <button class="rail-link" data-tab="export">
+        <span class="rl-text">יצוא והדפסה</span><span class="rl-icon">⎙</span>
+      </button>
+      <button class="rail-link" data-tab="cover">
+        <span class="rl-text">שערים וכריכות</span><span class="rl-icon">▤</span>
+      </button>
+      <button class="rail-link" data-tab="acct">
+        <span class="rl-text">הגדרות חשבון</span><span class="rl-icon">⚙</span>
+      </button>
     </nav>
 
     <div class="rail-body">
@@ -95,7 +123,7 @@
         </div>
         <div class="pane-sub">איזון טורים</div>
         <div class="balance-bar"><div class="balance-fill" id="balanceFill" style="width:0%"></div></div>
-        <div class="hint">קצב רשת בסיסית: <b>20px</b>. גימטריה: א–ת"ק.</div>
+        <div class="hint">קצב רשת בסיסית 20px · גימטריה א–ת"ק.</div>
       </section>
 
       <!-- Page settings -->
@@ -124,11 +152,11 @@
         </div>
       </section>
 
-      <!-- Running headers -->
+      <!-- Running header -->
       <section class="rail-pane" data-pane="head">
-        <div class="pane-title">כותרות רצות</div>
+        <div class="pane-title">כותרת רצה</div>
         <label>שם הספר</label>
-        <input type="text" id="bookName" value="אִמותומאט">
+        <input type="text" id="bookName" value="עימוטומט">
         <div class="row" style="margin-top:8px">
           <div><label>סוג מספור</label>
             <select id="pnMode">
@@ -149,8 +177,8 @@
 
       <!-- Style mapping (Vilna/Rashi) -->
       <section class="rail-pane" data-pane="style">
-        <div class="pane-title">מיפוי סגנונות</div>
-        <div class="hint">בחירת תבנית מאתחלת את הטיפוגרפיה. שינויי משתמש מנצחים את האוטומציה (שריון).</div>
+        <div class="pane-title">סגנונות</div>
+        <div class="hint">בחירת תבנית מאתחלת את הטיפוגרפיה. שינויי משתמש מנצחים את האוטומציה.</div>
         <div class="preset-grid" id="presetGrid"></div>
         <div class="pane-sub">חלן (Drop-cap)</div>
         <div class="row">
@@ -166,16 +194,16 @@
 
       <!-- Export & print -->
       <section class="rail-pane" data-pane="export">
-        <div class="pane-title">ייצוא והדפסה</div>
+        <div class="pane-title">יצוא והדפסה</div>
         <button class="primary" id="exportPdf">⬇ PDF וקטורי (שחור על לבן)</button>
         <button class="ghost" id="exportHtml" style="margin-top:6px">HTML עמודים</button>
         <button class="ghost" id="printNow" style="margin-top:6px">🖨 הדפסה</button>
-        <div class="hint">השפעות הזהב נשמרות במסך בלבד; הייצוא לוקטורי שחור-לבן.</div>
+        <div class="hint">אפקטי הזהב נשמרים במסך בלבד; הייצוא לוקטורי שחור-לבן.</div>
       </section>
 
       <!-- Covers -->
       <section class="rail-pane" data-pane="cover">
-        <div class="pane-title">כריכות</div>
+        <div class="pane-title">שערים וכריכות</div>
         <div class="cover-list" id="coverList">
           <div class="cover-card">קלאסית</div>
           <div class="cover-card">מודרנית</div>
@@ -186,37 +214,41 @@
 
       <!-- Account -->
       <section class="rail-pane" data-pane="acct">
-        <div class="pane-title">חשבון</div>
+        <div class="pane-title">הגדרות חשבון</div>
         <div class="acct-card">
           <div class="acct-name">אורח</div>
           <div class="acct-plan">תוכנית: Trial</div>
         </div>
         <button class="ghost">התחברות</button>
       </section>
+    </div>
 
-      <!-- Help -->
-      <section class="rail-pane" data-pane="help">
-        <div class="pane-title">מרכז עזרה</div>
-        <ul class="help-list">
-          <li>קיצור: <kbd>Ctrl</kbd>+<kbd>R</kbd> — עימוד מחדש</li>
-          <li>קיצור: <kbd>Ctrl</kbd>+<kbd>P</kbd> — הדפסה</li>
-          <li>קיצור: <kbd>+</kbd> / <kbd>-</kbd> — Push/Pull על טור פעיל</li>
-          <li>ערוץ תמיכה — בקרוב</li>
-        </ul>
-      </section>
+    <div class="rail-footer">
+      <button class="rail-spark" title="עזרה">✦</button>
     </div>
   </aside>
 </div>
 
-<!-- ===== FOOTER STATUS BAR ===== -->
-<footer class="footbar" id="footbar">
-  <div class="fb-cell"><span class="fb-k">Pages</span><span class="fb-v" id="fbPages">0</span></div>
-  <div class="fb-cell"><span class="fb-k">Words</span><span class="fb-v" id="fbWords">0</span></div>
-  <div class="fb-cell"><span class="fb-k">Chars</span><span class="fb-v" id="fbChars">0</span></div>
-  <div class="fb-cell"><span class="fb-k">Paragraphs</span><span class="fb-v" id="fbParas">0</span></div>
-  <div class="fb-cell"><span class="fb-k">Page Size</span><span class="fb-v" id="fbSize">17×24</span></div>
-  <div class="fb-cell fb-grow"><span class="fb-k">Status</span><span class="fb-v" id="fbStatus">ממתינה</span></div>
-</footer>
+<!-- ===== Bottom floating page-nav dock ===== -->
+<div class="dock" id="dock">
+  <div class="dock-cell">
+    <span class="dock-ico">▤</span>
+    <span class="dock-v" id="fbPages">0</span>
+    <span class="dock-v" id="fbSize">17×24cm</span>
+  </div>
+  <button class="dock-btn" id="zoomOutBtn" title="הקטן">−</button>
+  <button class="dock-btn" id="zoomInBtn" title="הגדל">⌕</button>
+  <button class="dock-btn" id="fitBtn" title="התאם">⛶</button>
+  <button class="dock-btn dock-next" id="nextPageBtn" title="הבא">›</button>
+</div>
+
+<!-- Hidden footer telemetry mirrors (rail uses k* IDs; dock uses a subset) -->
+<div hidden>
+  <span id="fbStatus">מוכן</span>
+  <span id="fbWords">0</span>
+  <span id="fbChars">0</span>
+  <span id="fbParas">0</span>
+</div>
 
 <!-- Word inspector popup -->
 <div class="word-pop" id="wordPop" hidden>
@@ -228,6 +260,13 @@
     <div><span>פסקה</span><b id="wpPara">—</b></div>
     <div><span>עמוד</span><b id="wpPage">—</b></div>
   </div>
+</div>
+
+<!-- Hidden controls referenced by app.js but not surfaced in this layout -->
+<div hidden>
+  <button id="reflowBtn"></button>
+  <button id="newDocBtn"></button>
+  <button id="pdfBtn"></button>
 </div>
 
 <script src="/app.js" type="module"></script>
